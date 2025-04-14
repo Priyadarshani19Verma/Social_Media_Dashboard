@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Social Media Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #f4f6f8;
+      --text-color: #333;
+      --card-color: white;
+      --accent-color: #4e73df;
+    }
+
+    body.dark {
+      --bg-color: #121212;
+      --text-color: #f5f5f5;
+      --card-color: #1e1e1e;
+      --accent-color: #bb86fc;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0 20px;
+      transition: all 0.3s;
+    }
+
+    header {
+      background-color: var(--accent-color);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 0 0 10px 10px;
+    }
+
+    header h1 {
+      margin: 0;
+    }
+
+    nav a {
+      color: white;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .card {
+      background-color: var(--card-color);
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: var(--accent-color);
+    }
+
+    input[type="text"], textarea {
+      padding: 10px;
+      width: 90%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 500;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s, transform 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    .like-btn {
+      background-color: #ff6b81;
+    }
+
+    .like-btn:hover {
+      background-color: #ff4757;
+    }
+
+    .comment-btn {
+      background-color: #2ed573;
+    }
+
+    .comment-btn:hover {
+      background-color: #1dd1a1;
+    }
+
+    .comment-list {
+      margin-top: 10px;
+      padding-left: 15px;
+    }
+
+    .comment-list li {
+      list-style: none;
+      margin-bottom: 10px;
+      position: relative;
+      padding: 10px;
+      background-color: var(--card-color);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .comment-actions {
+      display: none;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    .comment-list li:hover .comment-actions {
+      display: block;
+    }
+
+    .comment-btn, .edit-btn, .delete-btn {
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: white;
+      text-decoration: none;
+      margin-left: 5px;
+    }
+
+    .edit-btn {
+      background-color: var(--accent-color);
+    }
+
+    .delete-btn {
+      background-color: crimson;
+    }
+
+    .profile-info {
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .dark-toggle {
+      cursor: pointer;
+      font-size: 14px;
+      background: none;
+      border: none;
+      color: white;
+      text-decoration: underline;
+    }
+    .post-btn {
+      background-color: #1e90ff;
+    }
+    
+    .post-btn:hover {
+      background-color: #0d6efd;
+    }
+    
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Social Media Dashboard</h1>
+      <div class="profile-info">Logged in as <strong>{{ request.user.username }}</strong></div>
+    </div>
+    <nav>
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a href="{% url 'logout' %}">Logout</a>
+      <button class="dark-toggle" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+    </nav>
+  </header>
+
+  <div class="card">
+    <h2 style="margin-bottom: 20px;">📊 Social Activity Summary</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between;">
+      <div style="flex: 1; min-width: 200px; background-color: var(--bg-color); border-radius: 10px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <h3>📝 Total Posts</h3>
+        <p style="font-size: 24px; font-weight: bold;">{{ total_posts }}</p>
+      </div>
+      <div style="flex: 1; min-width: 200px; background-color: var(--bg-color); border-radius: 10px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <h3>❤️ Total Likes</h3>
+        <p style="font-size: 24px; font-weight: bold;">{{ total_likes }}</p>
+      </div>
+      <div style="flex: 1; min-width: 200px; background-color: var(--bg-color); border-radius: 10px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <h3>💬 Total Comments</h3>
+        <p style="font-size: 24px; font-weight: bold;">{{ total_comments }}</p>
+      </div>
+    </div>
+    <hr style="margin: 20px 0;">
+    {% if top_post %}
+      <div>
+        <h3>🏆 Most Liked Post</h3>
+        <blockquote style="background-color: var(--bg-color); padding: 10px; border-left: 5px solid var(--accent-color); border-radius: 5px;">
+          "{{ top_post.content }}"<br>
+          <small>❤️ {{ top_post.likes.count }} likes</small>
+        </blockquote>
+      </div>
+    {% else %}
+      <p><em>No top post found yet.</em></p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Create a Post</h2>
+    <form method="POST">
+      {% csrf_token %}
+      {{ post_form.as_p }}
+      <button type="submit" class="post-btn">➕ Post</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Your Posts</h2>
+    {% for post in posts %}
+      <div style="margin-bottom: 25px;">
+        <p><strong>{{ post.user.username }}</strong>: {{ post.content }}</p>
+
+        <form action="{% url 'like_post' post.id %}" method="POST" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="like-btn">❤️ Like</button>
+        </form>
+        <span>{{ post.likes.count }} likes</span>
+
+        <form action="{% url 'comment_post' post.id %}" method="POST">
+          {% csrf_token %}
+          <input type="text" name="text" placeholder="Write a comment..." required>
+          <button type="submit" class="comment-btn">💬 Comment</button>
+        </form>
+
+        <ul class="comment-list">
+          {% for comment in post.comments.all %}
+            <li>
+              <strong>{{ comment.user.username }}</strong>: {{ comment.text }}
+              {% if comment.user == request.user %}
+                <div class="comment-actions">
+                  <a href="{% url 'edit_comment' comment.id %}" class="edit-btn">✏️ Edit</a>
+                  <a href="{% url 'delete_comment' comment.id %}" class="delete-btn">❌ Delete</a>
+                </div>
+              {% endif %}
+            </li>
+          {% empty %}
+            <li>No comments yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% empty %}
+      <p>No posts found.</p>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <h2>Latest Tweets</h2>
+    <ul>
+      {% for tweet in tweets %}
+        <li>{{ tweet.text }}</li>
+      {% empty %}
+        <li>No tweets found.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Latest Facebook Posts</h2>
+    <ul>
+      {% for post in fb_posts %}
+        <li>{{ post.message }}</li>
+      {% empty %}
+        <li>No Facebook posts found.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <script>
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+  </script>
+</body>
+</html>
